@@ -1,59 +1,68 @@
 package CRM.Data.Integration.ServiceImpl;
 
-import CRM.Data.Integration.Entity.CrmRecords;
-import CRM.Data.Integration.Model.CrmData;
-import CRM.Data.Integration.Repository.CrmRecordsRepo;
+import CRM.Data.Integration.Utility.CrmDataSerialization;
 import CRM.Data.Integration.Utility.CrmRecordUtility;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class ServiceImpl implements CRM.Data.Integration.Service.Service {
 
     @Autowired
-    private CrmRecordsRepo crmRecordsRepo;
-    @Autowired
     private JdbcTemplate jdbcTemplate;
     @Autowired
     private CrmRecordUtility crmRecordUtility;
+    @Autowired
+    private CrmDataSerialization crmDataSerialization;
 
-    public CrmData getCustomerData(){
+    public byte[] getCustomerData(){
+
 
         List<HashMap<String,String>> listOfRecords = new ArrayList<>();
-        CrmData crmData = new CrmData();
+        HashMap<String,Object> crmData = new HashMap<>();
+        byte [] serializeData = null;
         try {
-//            List<CrmRecords> crmData = crmRecordsRepo.findAll();
-            List<CrmRecords> crmDataValue = jdbcTemplate.query(crmRecordUtility.getQuery(),new BeanPropertyRowMapper<>(CrmRecords.class));
+            List<Map<String, Object>> crmDataValue = jdbcTemplate.query(crmRecordUtility.getQuery(),new BeanPropertyRowMapper<>());
 
-            for (CrmRecords record :crmDataValue){
+            for (Map<String, Object> record :crmDataValue){
                 HashMap<String,String> reportData = new HashMap<>();
-                reportData.put("Email ID",record.getEmailId());
-                reportData.put("First Name",record.getFirstName());
-                reportData.put("Last Name",record.getLastName());
-                reportData.put("Contact No 2",record.getContactNo2());
-                reportData.put("Residential Address",record.getResidentialAddress());
-                reportData.put("City",record.getCity());
-                reportData.put("Pincode",record.getPincode());
-                reportData.put("State",record.getState());
-                reportData.put("Customer Number",record.getCustomerNumber());
-                reportData.put("Agreement Number",record.getAgreementNumber());
-                reportData.put("Branch",record.getBranch());
-                reportData.put("Permanent Address",record.getPermanentAddress());
+                reportData.put("First Name", (String) record.get("First Name"));
+                reportData.put("Last Name", (String) record.get("Last Name"));
+                reportData.put("Landline 1", (String) record.get("Landline 1"));
+                reportData.put("Mobile Number", (String) record.get("Mobile Number"));
+                reportData.put("Email Address", (String) record.get("Email Address"));
+                reportData.put("Residential Address", (String) record.get("Residential Address"));
+                reportData.put("CITY", (String) record.get("CITY"));
+                reportData.put("STATE", (String) record.get("STATE"));
+                reportData.put("Pin Code", (String) record.get("Pin Code"));
+                reportData.put("Office/Business Address", (String) record.get("Office/Business Address"));
+                reportData.put("Permanent Address", (String) record.get("Permanent Address"));
+                reportData.put("CUSTOMER_NUMBER", (String) record.get("CUSTOMER_NUMBER"));
+                reportData.put("APPLICATION_NUMBER", (String) record.get("APPLICATION_NUMBER"));
+                reportData.put("Loan Account No", (String) record.get("Loan Account No"));
+                reportData.put("Lead Number", (String) record.get("Lead Number"));
+                reportData.put("Application Form Number", (String) record.get("Application Form Number"));
+                reportData.put("PAN", (String) record.get("PAN"));
+                reportData.put("AADHAR_NO", (String) record.get("AADHAR_NO"));
+                reportData.put("DRIVING_LICENCE", (String) record.get("DRIVING_LICENCE"));
+                reportData.put("Branch Name", (String) record.get("Branch Name"));
+                reportData.put("APPLICATION_RECIEVED_DATE", (String) record.get("APPLICATION_RECIEVED_DATE"));
+                reportData.put("CURRENT_STATUS", (String) record.get("CURRENT_STATUS"));
 
                 listOfRecords.add(reportData);
             }
-            crmData.setRecords(listOfRecords);
-            crmRecordUtility.callCrmIntegration(crmData);
+            System.out.println(listOfRecords);
+            crmData.put("records", listOfRecords);
 
+            serializeData = crmDataSerialization.serializeCrmData(crmData,"serializedFile.txt");
+            crmRecordUtility.callCrmIntegration(serializeData, crmData);
         }catch (Exception e){
             System.out.println(e);
         }
-        return crmData;
+        return serializeData;
     }
 }
