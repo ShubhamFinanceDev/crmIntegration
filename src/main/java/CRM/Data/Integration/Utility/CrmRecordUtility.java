@@ -1,6 +1,7 @@
 package CRM.Data.Integration.Utility;
 
 import CRM.Data.Integration.Model.CommonResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +18,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -44,60 +44,46 @@ public class CrmRecordUtility {
     private final RestTemplate restTemplate = new RestTemplate();
     private final Logger logger = LoggerFactory.getLogger(CrmRecordUtility.class);
 
-    public String getQuery(LocalDate applicationReceivedDate) {
-        return " SELECT\n" +
-                "    \"CUSTOMER_NUMBER\",\n" +
-                "    \"APPLICATION_NUMBER\",\n" +
-                "    \"Loan Account No\",\n" +
-                "    \"First Name\",\n" +
-                "    \"Last Name\",\n" +
-                "    \"Mobile Number\",\n" +
-                "    \"Residential Address\",\n" +
-                "    \"CITY\",\n" +
-                "    \"STATE\",\n" +
-                "    \"Pin Code\",\n" +
-                "    \"Office/ Business Address\",\n" +
-                "    \"Permanent Address\",\n" +
-                "    \"Branch Name\",\n" +
-                "    \"APPLICATION_RECIEVED_DATE\"\n" +
-                "FROM\n" +
-                "    neo_cas_lms_sit1_sh.crm2\n" +
-                "FETCH FIRST 2 ROWS ONLY;";
+    public String getQuery() {
+        return "SELECT " +
+                "CUSTOMER_NUMBER, " +
+                "APPLICATION_NUMBER, " +
+                "\"Loan Account No\", " +
+                "\"First Name\", " +
+                "\"Last Name\", " +
+                "\"Mobile Number\", " +
+                "\"Residential Address\", " +
+                "CITY, " +
+                "STATE, " +
+                "\"Pin Code\", " +
+                "\"Office/ Business Address\", " +
+                "\"Permanent Address\", " +
+                "\"Branch Name\", " +
+                "APPLICATION_RECIEVED_DATE " +
+                "FROM neo_cas_lms_sit1_sh.crm2 " +
+                "ORDER BY APPLICATION_NUMBER " +
+                "FETCH FIRST 1 ROWS ONLY";
     }
 
-    public void callCrmIntegration(byte[] serializeData, HashMap<String, Object> crmData, CommonResponse commonResponse) throws Exception{
+    public void callCrmIntegration(HashMap<String, List<?>> crmData, CommonResponse commonResponse) {
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", apiKey);
-        headers.setContentType(MediaType.APPLICATION_JSON);
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            System.out.println(objectMapper.writeValueAsString(crmData));
+            ResponseEntity<String> responseEntity = restTemplate.postForEntity(apiUrl, objectMapper.writeValueAsString(crmData), String.class);
+            System.out.println("Response: " + responseEntity.getBody());
 
-        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-        formData.add("data-raw", Arrays.toString(serializeData));
-        formData.add("formname", formName);
-        formData.add("operation", operation);
-        formData.add("overwrite", overwrite);
+            commonResponse.setCode("0000");
+            commonResponse.setMsg("Success");
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("error while cm api calling" + e.getMessage());
+            commonResponse.setCode("1111");
+            commonResponse.setMsg("error while cm api calling" + e.getMessage());
 
-            HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(formData, headers);
+        }
 
-            ResponseEntity<String> responseEntity = restTemplate.postForEntity(apiUrl, requestEntity, String.class);
 
-            if (responseEntity.getStatusCode().is2xxSuccessful()) {
-                String responseBody = responseEntity.getBody();
-                if (responseBody.contains("SUCCESS") || responseBody.contains("200")) {
-//                    getEmailAndSendMail(crmData, "SUCCESS");
-                    commonResponse.setCode("0000");
-                    commonResponse.setMsg("API call succeeded with status: " + responseBody);
-                    logger.info("API call succeeded with status : {}", responseBody);
-                } else {
-//                    getEmailAndSendMail(crmData, "FAILURE");
-                    commonResponse.setCode("1111");
-                    commonResponse.setMsg("API call returned failure status: " + responseBody);
-                    logger.info("API call returned failure status: {}", responseBody);
-                }
-            } else {
-                commonResponse.setCode("1111");
-                commonResponse.setMsg("API call failed with status code: " + responseEntity.getStatusCode());
-            }
     }
 
     private void getEmailAndSendMail(HashMap<String, Object> crmData, String msg) throws Exception {
@@ -110,7 +96,7 @@ public class CrmRecordUtility {
     }
 
     @Async
-    private void sendMail(String email, String msg) throws Exception{
+    protected void sendMail(String email, String msg) throws Exception {
         try {
             SimpleMailMessage mailMessage = new SimpleMailMessage();
             mailMessage.setFrom(sender);
