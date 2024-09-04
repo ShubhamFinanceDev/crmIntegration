@@ -3,11 +3,14 @@ package CRM.Data.Integration.ServiceImpl;
 import CRM.Data.Integration.Model.CommonResponse;
 import CRM.Data.Integration.Utility.CrmDataSerialization;
 import CRM.Data.Integration.Utility.CrmRecordUtility;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.*;
 
 @Service
@@ -20,6 +23,8 @@ public class ServiceImpl implements CRM.Data.Integration.Service.Service {
     @Autowired
     private CrmDataSerialization crmDataSerialization;
 
+    private final Logger logger = LoggerFactory.getLogger(ServiceImpl.class);
+
     public CommonResponse getCustomerData(){
 
 
@@ -28,7 +33,7 @@ public class ServiceImpl implements CRM.Data.Integration.Service.Service {
         CommonResponse commonResponse = new CommonResponse();
         byte [] serializeData = null;
         try {
-            List<Map<String, Object>> crmDataValue = jdbcTemplate.query(crmRecordUtility.getQuery(),new BeanPropertyRowMapper<>());
+            List<Map<String, Object>> crmDataValue = jdbcTemplate.queryForList(crmRecordUtility.getQuery(LocalDate.now()));
             if (!crmDataValue.isEmpty()) {
                 for (Map<String, Object> record : crmDataValue) {
                     HashMap<String, String> reportData = new HashMap<>();
@@ -67,7 +72,8 @@ public class ServiceImpl implements CRM.Data.Integration.Service.Service {
             crmRecordUtility.callCrmIntegration(serializeData, crmData, commonResponse);
         }catch (Exception e){
             commonResponse.setCode("1111");
-            commonResponse.setMsg("Internal server error: " + e.getMessage());
+            commonResponse.setMsg("Technical issue : " + e.getMessage());
+            logger.error("Technical issue :{}", e.getMessage());
         }
         return commonResponse;
     }

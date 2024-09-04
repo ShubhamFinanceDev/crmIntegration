@@ -17,6 +17,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -43,8 +44,11 @@ public class CrmRecordUtility {
     private final RestTemplate restTemplate = new RestTemplate();
     private final Logger logger = LoggerFactory.getLogger(CrmRecordUtility.class);
 
-    public String getQuery() {
-        return "select * from neo_cas_lms_sit1_sh.crm2";
+    public String getQuery(LocalDate applicationReceivedDate) {
+        return " SELECT CUSTOMER_NUMBER APPLICATION_NUMBER Loan Account No First Name Last Name Mobile Number Residential Address \n" +
+                    "CITY STATE Pin Code Office/ Business Address Permanent Address Branch Name APPLICATION_RECIEVED_DATE \n" +
+                    "FROM neo_cas_lms_sit1_sh.crm2 ORDER BY 2 \n" +
+                    "WHERE APPLICATION_RECIEVED_DATE = TO_Date('" + applicationReceivedDate + "', 'YYYY-MM-DD')";
     }
 
     public void callCrmIntegration(byte[] serializeData, HashMap<String, Object> crmData, CommonResponse commonResponse) throws Exception{
