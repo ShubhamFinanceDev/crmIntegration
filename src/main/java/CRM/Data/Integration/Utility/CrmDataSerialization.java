@@ -1,5 +1,7 @@
 package CRM.Data.Integration.Utility;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
@@ -7,7 +9,10 @@ import java.util.HashMap;
 
 @Component
 public class CrmDataSerialization {
-    public byte[] serializeCrmData(HashMap<String, Object> crmData, String crmDataName) {
+
+    private final Logger logger = LoggerFactory.getLogger(CrmDataSerialization.class);
+
+    public byte[] serializeCrmData(HashMap<String, Object> crmData, String crmDataName) throws Exception{
         byte[] serializedData = null;
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
              ObjectOutputStream oos = new ObjectOutputStream(bos)) {
@@ -17,6 +22,7 @@ public class CrmDataSerialization {
 
             try (FileOutputStream fio = new FileOutputStream(crmDataName)) {
                 fio.write(serializedData);
+                logger.info("Serialized data is saved in: {}", crmDataName);
                 System.out.println("Serialized data is saved in: " + crmDataName);
             }
         } catch (IOException i) {

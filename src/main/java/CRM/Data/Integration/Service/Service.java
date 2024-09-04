@@ -1,6 +1,8 @@
 package CRM.Data.Integration.Service;
 
+import CRM.Data.Integration.Model.CommonResponse;
+
 public interface Service {
 
-    byte[] getCustomerData();
+    CommonResponse getCustomerData();
 }
