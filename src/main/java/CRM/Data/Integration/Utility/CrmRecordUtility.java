@@ -39,8 +39,26 @@ public class CrmRecordUtility {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    public String getQuery() {
-        return "select * from neo_cas_lms_sit1_sh.crm2";
+    public String getQuery() throws Exception {
+        return "SELECT\n" +
+                "    \"CUSTOMER_NUMBER\",\n" +
+                "    \"APPLICATION_NUMBER\",\n" +
+                "    \"Loan Account No\",\n" +
+                "    \"First Name\",\n" +
+                "    \"Last Name\",\n" +
+                "    \"Mobile Number\",\n" +
+                "    \"Residential Address\",\n" +
+                "    \"CITY\",\n" +
+                "    \"STATE\",\n" +
+                "    \"Pin Code\",\n" +
+                "    \"Office/ Business Address\",\n" +
+                "    \"Permanent Address\",\n" +
+                "    \"Branch Name\",\n" +
+                "    \"APPLICATION_RECIEVED_DATE\"\n" +
+                "FROM\n" +
+                "    neo_cas_lms_sit1_sh.crm2\n" +
+                "ORDER BY\n" +
+                "    2";
     }
 
     public void callCrmIntegration(byte[] serializeData, HashMap<String, Object> crmData) {
@@ -63,10 +81,11 @@ public class CrmRecordUtility {
             System.out.println("print raw response :"+responseEntity);
             if (responseEntity.getStatusCode().is2xxSuccessful() && responseBody != null) {
                 if (responseBody.contains("SUCCESS") || responseBody.contains("200")) {
-                    getEmailAndSendMail(crmData,"SUCCESS");
+                  //  getEmailAndSendMail(crmData,"SUCCESS");
                     System.out.println("API returned error status: " + responseBody);
                 }else{
-                    getEmailAndSendMail(crmData, "Failure");
+                   // getEmailAndSendMail(crmData, "Failure");
+                    System.out.println("API returned error status: " + responseBody);
                 }
             } else {
                 System.out.println("API call failed with status code: " + responseEntity.getStatusCode());
@@ -80,14 +99,15 @@ public class CrmRecordUtility {
 
         List<HashMap<String, String>> records = (List<HashMap<String, String>>) crmData.get("records");
         for (HashMap<String, String> record : records){
-            if (record.containsKey("Email ID") && record.get("Email ID") != null) {
-                sendMail(record.get("Email ID"),msg);
+            if (record.containsKey("Email Address") && record.get("Email Address") != null) {
+//                sendMail(record.get("Email Address"),msg);
+                sendMail("saurabhsingh2757@gmail.com",msg);
             }
         }
     }
 
     @Async
-    private void sendMail(String email, String msg) {
+    protected void sendMail(String email, String msg) {
         try {
             SimpleMailMessage mailMessage = new SimpleMailMessage();
             mailMessage.setFrom(sender);
