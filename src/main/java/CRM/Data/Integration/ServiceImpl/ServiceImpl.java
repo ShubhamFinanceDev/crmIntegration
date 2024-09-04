@@ -67,7 +67,7 @@ public class ServiceImpl implements CRM.Data.Integration.Service.Service {
                 commonResponse.setMsg("Data not found : {}");
             }
             crmData.put("records", listOfRecords);
-
+            logger.info("Data fetch by query : {}",crmDataValue.size());
             serializeData = crmDataSerialization.serializeCrmData(crmData,"serializedFile.txt");
             crmRecordUtility.callCrmIntegration(serializeData, crmData, commonResponse);
         }catch (Exception e){

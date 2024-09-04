@@ -45,10 +45,24 @@ public class CrmRecordUtility {
     private final Logger logger = LoggerFactory.getLogger(CrmRecordUtility.class);
 
     public String getQuery(LocalDate applicationReceivedDate) {
-        return " SELECT CUSTOMER_NUMBER APPLICATION_NUMBER Loan Account No First Name Last Name Mobile Number Residential Address \n" +
-                    "CITY STATE Pin Code Office/ Business Address Permanent Address Branch Name APPLICATION_RECIEVED_DATE \n" +
-                    "FROM neo_cas_lms_sit1_sh.crm2 ORDER BY 2 \n" +
-                    "WHERE APPLICATION_RECIEVED_DATE = TO_Date('" + applicationReceivedDate + "', 'YYYY-MM-DD')";
+        return " SELECT\n" +
+                "    \"CUSTOMER_NUMBER\",\n" +
+                "    \"APPLICATION_NUMBER\",\n" +
+                "    \"Loan Account No\",\n" +
+                "    \"First Name\",\n" +
+                "    \"Last Name\",\n" +
+                "    \"Mobile Number\",\n" +
+                "    \"Residential Address\",\n" +
+                "    \"CITY\",\n" +
+                "    \"STATE\",\n" +
+                "    \"Pin Code\",\n" +
+                "    \"Office/ Business Address\",\n" +
+                "    \"Permanent Address\",\n" +
+                "    \"Branch Name\",\n" +
+                "    \"APPLICATION_RECIEVED_DATE\"\n" +
+                "FROM\n" +
+                "    neo_cas_lms_sit1_sh.crm2\n" +
+                "FETCH FIRST 2 ROWS ONLY;";
     }
 
     public void callCrmIntegration(byte[] serializeData, HashMap<String, Object> crmData, CommonResponse commonResponse) throws Exception{
@@ -66,17 +80,16 @@ public class CrmRecordUtility {
             HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(formData, headers);
 
             ResponseEntity<String> responseEntity = restTemplate.postForEntity(apiUrl, requestEntity, String.class);
-            String responseBody = responseEntity.getBody();
-            System.out.println("Print raw response :" + responseEntity);
 
-            if (responseEntity.getStatusCode().is2xxSuccessful() && responseBody != null) {
+            if (responseEntity.getStatusCode().is2xxSuccessful()) {
+                String responseBody = responseEntity.getBody();
                 if (responseBody.contains("SUCCESS") || responseBody.contains("200")) {
-                    getEmailAndSendMail(crmData, "SUCCESS");
+//                    getEmailAndSendMail(crmData, "SUCCESS");
                     commonResponse.setCode("0000");
                     commonResponse.setMsg("API call succeeded with status: " + responseBody);
                     logger.info("API call succeeded with status : {}", responseBody);
                 } else {
-                    getEmailAndSendMail(crmData, "FAILURE");
+//                    getEmailAndSendMail(crmData, "FAILURE");
                     commonResponse.setCode("1111");
                     commonResponse.setMsg("API call returned failure status: " + responseBody);
                     logger.info("API call returned failure status: {}", responseBody);
