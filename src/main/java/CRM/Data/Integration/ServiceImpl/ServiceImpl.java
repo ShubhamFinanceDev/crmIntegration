@@ -25,7 +25,7 @@ public class ServiceImpl implements CRM.Data.Integration.Service.Service {
 
     private final Logger logger = LoggerFactory.getLogger(ServiceImpl.class);
 
-    @Scheduled(cron = "0 0/1 * * * *")
+//    @Scheduled(cron = "0 0/1 * * * *")
     public CommonResponse getCustomerData(){
         List<CustomerRecord> listOfRecords = new ArrayList<>();
         HashMap<String,List<CustomerRecord>> crmData = new HashMap<>();
