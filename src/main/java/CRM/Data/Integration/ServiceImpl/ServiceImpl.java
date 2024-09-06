@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -26,6 +27,12 @@ public class ServiceImpl implements CRM.Data.Integration.Service.Service {
     private CrmRecordUtility crmRecordUtility;
 
     private final Logger logger = LoggerFactory.getLogger(ServiceImpl.class);
+
+    @Scheduled(cron = "0 0 10 * * *")
+    public void executeTask(){
+        logger.info("CRM Data invoked by scheduler");
+        getCustomerData();
+    }
 
     public ResponseEntity<CommonResponse> getCustomerData() {
 
