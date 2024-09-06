@@ -32,23 +32,25 @@ public class CrmRecordUtility {
     private final Logger logger = LoggerFactory.getLogger(CrmRecordUtility.class);
 
     public String getQuery() {
-        String query = "SELECT " +
-                "CUSTOMER_NUMBER, " +
-                "APPLICATION_NUMBER, " +
-                "\"Loan Account No\", " +
-                "\"First Name\", " +
-                "\"Last Name\", " +
-                "\"Mobile Number\", " +
-                "\"Residential Address\", " +
-                "CITY, " +
-                "STATE, " +
-                "\"Pin Code\", " +
-                "\"Office/ Business Address\", " +
-                "\"Permanent Address\", " +
-                "\"Branch Name\", " +
-                "APPLICATION_RECIEVED_DATE " +
-                "FROM neo_cas_lms_sit1_sh.crm2 " +
-                "ORDER BY APPLICATION_NUMBER " +
+        String query = "SELECT\n" +
+                "    \"CUSTOMER_NUMBER\" AS customerNumber,\n" +
+                "    \"APPLICATION_NUMBER\" AS applicationNumber,\n" +
+                "    \"Loan Account No\" AS loanAccountNo,\n" +
+                "    \"First Name\" AS firstName,\n" +
+                "    \"Last Name\" AS lastName,\n" +
+                "    \"Mobile Number\" AS mobileNumber,\n" +
+                "    \"Residential Address\" AS residentialAddress,\n" +
+                "    \"CITY\" AS city,\n" +
+                "    \"STATE\" AS state,\n" +
+                "    \"Pin Code\" AS pinCode,\n" +
+                "    \"Office/ Business Address\" AS officeBusinessAddress,\n" +
+                "    \"Permanent Address\" AS permanentAddress,\n" +
+                "    \"Branch Name\" AS branchName,\n" +
+                "    \"APPLICATION_RECIEVED_DATE\" AS applicationReceivedDate\n" +
+                "FROM\n" +
+                "    neo_cas_lms_sit1_sh.crm2\n" +
+                "ORDER BY\n" +
+                "    applicationNumber  \n" +
                 "FETCH FIRST 1 ROWS ONLY";
 
         logger.info("Executing query: {}",query);

@@ -19,5 +19,5 @@ public class CustomerRecord {
     private String applicationNumber;
     private String loanAccountNo;
     private String branchName;
-    private LocalDateTime applicationReceivedDate;
+    private String applicationReceivedDate;
 }
