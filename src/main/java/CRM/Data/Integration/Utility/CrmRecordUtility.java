@@ -8,11 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -55,8 +52,6 @@ public class CrmRecordUtility {
                 "ORDER BY\n" +
                 "    applicationNumber  \n" +
                 "FETCH FIRST 1 ROWS ONLY";
-
-//        logger.info("Executing query: {}",query);
         return query;
     }
 
@@ -71,6 +66,4 @@ public class CrmRecordUtility {
         commonResponse.setMsg((responseEntity.getStatusCode() == HttpStatus.OK && Objects.requireNonNull(responseEntity.getBody()).contains("success")) ? "Success" : "Crm api is having an error");
         logger.info("Received response from CRM integration API. Status Code: {}, Body: {}", responseEntity.getStatusCode(), responseEntity.getBody());
     }
-
-
 }
