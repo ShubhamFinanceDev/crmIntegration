@@ -50,6 +50,7 @@ public class ServiceImpl implements CRM.Data.Integration.Service.Service {
             }
                 logger.info("Data fetched successfully. Number of records: {}", crmDataValue.size());
                 commonResponse.setMsg("Data fetched successfully.");
+                crmRecordUtility.generateExcel(crmDataValue);
                 crmData.put("records", crmRequest);
             } else {
                 commonResponse.setMsg("Data not found : {}");
