@@ -32,36 +32,31 @@ public class CrmRecordUtility {
     private final Logger logger = LoggerFactory.getLogger(CrmRecordUtility.class);
 
     public String getQuery() {
-        String query = "SELECT\n" +
-                "    \"CUSTOMER_NUMBER\" AS customerNumber,\n" +
-                "    \"APPLICATION_NUMBER\" AS applicationNumber,\n" +
-                "    \"Loan Account No\" AS loanAccountNo,\n" +
-                "    \"First Name\" AS firstName,\n" +
-                "    \"Last Name\" AS lastName,\n" +
-                "    \"Mobile Number\" AS mobileNumber,\n" +
-                "    \"Residential Address\" AS residentialAddress,\n" +
-                "    \"CITY\" AS city,\n" +
-                "    \"STATE\" AS state,\n" +
-                "    \"Pin Code\" AS pinCode,\n" +
-                "    \"Office/ Business Address\" AS officeBusinessAddress,\n" +
-                "    \"Permanent Address\" AS permanentAddress,\n" +
-                "    \"Branch Name\" AS branchName,\n" +
-                "    \"APPLICATION_RECIEVED_DATE\" AS applicationReceivedDate\n" +
-                "FROM\n" +
-                "    neo_cas_lms_sit1_sh.crm2\n" +
-                "ORDER BY\n" +
-                "    applicationNumber  \n" +
-                "FETCH FIRST 1 ROWS ONLY";
+        String query = "select  \"CUSTOMER_NUMBER\" AS customerNumber,\n" +
+                "                    \"APPLICATION_NUMBER\" AS applicationNumber,\n" +
+                "                    \"Loan Account No\" AS loanAccountNo,\n" +
+                "                    \"First Name\" AS firstName,\n" +
+                "                    \"Last Name\" AS lastName,\n" +
+                "                    \"Mobile Number\" AS mobileNumber,\n" +
+                "                    \"Residential Address\" AS residentialAddress,\n" +
+                "                    \"CITY\" AS city,\n" +
+                "                    \"STATE\" AS state,\n" +
+                "                    \"Pin Code\" AS pinCode,\n" +
+                "                    \"Office/ Business Address\" AS officeBusinessAddress,\n" +
+                "                    \"Permanent Address\" AS permanentAddress,\n" +
+                "                    \"Branch Name\" AS branchName from (\n" +
+                "select *  from neo_cas_lms_sit1_sh.crm2 where APPLICATION_RECIEVED_DATE !='Migrated Case' \n" +
+                "and  APPLICATION_RECIEVED_DATE is not null) where \n" +
+                "to_date(substr(APPLICATION_RECIEVED_DATE,1,8),'dd-mm-yy') = to_date(to_char(trunc(sysdate-2),'dd-mm-yyyy'),'dd-mm-yy')\n";
         return query;
     }
 
-    public void callCrmIntegration(HashMap<String, List<CustomerRecord>> crmData, CommonResponse commonResponse) throws Exception {
-
+    public void callCrmIntegration(HashMap<String, List<?>> crmData, CommonResponse commonResponse) throws Exception {
         logger.info("Crm API invoked");
 
         ObjectMapper objectMapper = new ObjectMapper();
-        System.out.println(objectMapper.writeValueAsString(crmData));
-        ResponseEntity<String> responseEntity = restTemplate.postForEntity(apiUrl, objectMapper, String.class);
+//        System.out.println(objectMapper.writeValueAsString(crmData));
+        ResponseEntity<String> responseEntity = restTemplate.postForEntity(apiUrl, objectMapper.writeValueAsString(crmData), String.class);
 
         commonResponse.setMsg((responseEntity.getStatusCode() == HttpStatus.OK && Objects.requireNonNull(responseEntity.getBody()).contains("success")) ? "Success" : "Crm api is having an error");
         logger.info("Received response from CRM integration API. Status Code: {}, Body: {}", responseEntity.getStatusCode(), responseEntity.getBody());

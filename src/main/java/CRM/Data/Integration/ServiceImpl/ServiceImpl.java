@@ -36,19 +36,27 @@ public class ServiceImpl implements CRM.Data.Integration.Service.Service {
 
     public ResponseEntity<CommonResponse> getCustomerData() {
 
-        HashMap<String, List<CustomerRecord>> crmData = new HashMap<>();
+        HashMap<String, List<?>> crmData = new HashMap<>();
         CommonResponse commonResponse = new CommonResponse();
         try {
-            List<CustomerRecord> crmDataValue = jdbcTemplate.query(crmRecordUtility.getQuery(), new BeanPropertyRowMapper<>(CustomerRecord.class));
+           List<CustomerRecord> crmDataValue = jdbcTemplate.query(crmRecordUtility.getQuery(), new BeanPropertyRowMapper<>(CustomerRecord.class));
+
+            List<HashMap<String, String>> crmRequest = new ArrayList<>();
             if (!crmDataValue.isEmpty()) {
+            for (CustomerRecord fetchData : crmDataValue) {
+                HashMap<String, String> crmRequestData = convertParamsForCrmRequest(fetchData);
+
+                crmRequest.add(crmRequestData);
+            }
                 logger.info("Data fetched successfully. Number of records: {}", crmDataValue.size());
                 commonResponse.setMsg("Data fetched successfully.");
-                crmData.put("records", crmDataValue);
+                crmData.put("records", crmRequest);
             } else {
                 commonResponse.setMsg("Data not found : {}");
                 logger.info("Data not found for query Triggered on Timestamp: {}", LocalDateTime.now());
             }
-            crmRecordUtility.callCrmIntegration(crmData, commonResponse);
+
+//            crmRecordUtility.callCrmIntegration(crmData, commonResponse);
             logger.info("API triggered successfully. Timestamp: {}", LocalDateTime.now());
             return ResponseEntity.ok(commonResponse);
         } catch (Exception e) {
@@ -56,5 +64,23 @@ public class ServiceImpl implements CRM.Data.Integration.Service.Service {
             logger.error("Error occurred during data retrieval or CRM integration. Exception: {}", e.getMessage(), e);
             return new ResponseEntity<>(commonResponse, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    private HashMap<String, String> convertParamsForCrmRequest(CustomerRecord data) {
+        HashMap<String, String> data1 = new HashMap<>();
+        data1.put("First Name", data.getFirstName());
+        data1.put("Application No", data.getApplicationNumber());
+        data1.put("Last Name", data.getLastName());
+        data1.put("Contact No 1", data.getMobileNumber());
+        data1.put("Email ID", "");
+        data1.put("Residential Address", data.getResidentialAddress());
+        data1.put("City", data.getCity());
+        data1.put("Pincode", data.getPinCode());
+        data1.put("State", data.getState());
+        data1.put("Customer Number", data.getCustomerNumber());
+        data1.put("Agreement Number", "");
+        data1.put("Branch", data.getBranchName());
+        data1.put("Permanent Address", data.getPermanentAddress());
+        return data1;
     }
 }
