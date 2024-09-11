@@ -33,7 +33,7 @@ public class CrmRecordUtility {
 
     public String getQuery() {
         String query = "select  \"CUSTOMER_NUMBER\" AS customerNumber,\n" +
-                "                    \"APPLICATION_NUMBER\" AS applicationNumber,\n" +
+                "                    distinct\"APPLICATION_NUMBER\" AS applicationNumber,\n" +
                 "                    \"Loan Account No\" AS loanAccountNo,\n" +
                 "                    \"First Name\" AS firstName,\n" +
                 "                    \"Last Name\" AS lastName,\n" +
