@@ -21,6 +21,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -104,13 +105,14 @@ public class CrmRecordUtility {
                 row.createCell(8).setCellValue(entry.getState());
                 row.createCell(9).setCellValue(entry.getCustomerNumber());
                 row.createCell(10).setCellValue("");
-                row.createCell(12).setCellValue(entry.getBranchName());
-                row.createCell(13).setCellValue(entry.getPermanentAddress());
+                row.createCell(11).setCellValue(entry.getBranchName());
+                row.createCell(12).setCellValue(entry.getPermanentAddress());
             }
             workbook.write(byteArrayOutputStream);
-            workbook.close();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+            String timestamp = LocalDateTime.now().format(formatter);
+            File file = new File(directoryPath, "CustomerRecords_" + timestamp + ".xlsx");
 
-            File file = new File(directoryPath, String.valueOf(LocalDateTime.now()));
             try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
                 byteArrayOutputStream.writeTo(fileOutputStream);
             }
