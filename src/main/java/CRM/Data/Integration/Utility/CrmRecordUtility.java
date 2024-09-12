@@ -37,7 +37,7 @@ public class CrmRecordUtility {
     private String sender;
     @Value("${api.url}")
     private String apiUrl;
-    @Value("${project.save.path}")
+    @Value("${excel.save.path}")
     private String directoryPath;
 
     private final RestTemplate restTemplate = new RestTemplate();
