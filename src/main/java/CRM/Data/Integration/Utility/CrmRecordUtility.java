@@ -43,22 +43,26 @@ public class CrmRecordUtility {
     private final Logger logger = LoggerFactory.getLogger(CrmRecordUtility.class);
 
     public String getQuery() {
-        String query = "select  \"CUSTOMER_NUMBER\" AS customerNumber,\n" +
-                "                    distinct\"APPLICATION_NUMBER\" AS applicationNumber,\n" +
-                "                    \"Loan Account No\" AS loanAccountNo,\n" +
-                "                    \"First Name\" AS firstName,\n" +
-                "                    \"Last Name\" AS lastName,\n" +
-                "                    \"Mobile Number\" AS mobileNumber,\n" +
-                "                    \"Residential Address\" AS residentialAddress,\n" +
-                "                    \"CITY\" AS city,\n" +
-                "                    \"STATE\" AS state,\n" +
-                "                    \"Pin Code\" AS pinCode,\n" +
-                "                    \"Office/ Business Address\" AS officeBusinessAddress,\n" +
-                "                    \"Permanent Address\" AS permanentAddress,\n" +
-                "                    \"Branch Name\" AS branchName from (\n" +
-                "select *  from neo_cas_lms_sit1_sh.crm2 where APPLICATION_RECIEVED_DATE !='Migrated Case' \n" +
-                "and  APPLICATION_RECIEVED_DATE is not null) where \n" +
-                "to_date(substr(APPLICATION_RECIEVED_DATE,1,8),'dd-mm-yy') = to_date(to_char(trunc(sysdate-2),'dd-mm-yyyy'),'dd-mm-yy')\n";
+        String query = "SELECT DISTINCT \"APPLICATION_NUMBER\", \n" +
+                "                \"CUSTOMER_NUMBER\" AS customerNumber,\n" +
+                "                \"APPLICATION_NUMBER\" AS applicationNumber,\n" +
+                "                \"Loan Account No\" AS loanAccountNo,\n" +
+                "                \"First Name\" AS firstName,\n" +
+                "                \"Last Name\" AS lastName,\n" +
+                "                DBMS_LOB.SUBSTR(\"Mobile Number\", 4000, 1) AS mobileNumber,\n" +
+                "                \"Residential Address\" AS residentialAddress,\n" +
+                "                \"CITY\" AS city,\n" +
+                "                \"STATE\" AS state,\n" +
+                "                \"Pin Code\" AS pinCode,\n" +
+                "                \"Office/ Business Address\" AS officeBusinessAddress,\n" +
+                "                \"Permanent Address\" AS permanentAddress,\n" +
+                "                \"Branch Name\" AS branchName \n" +
+                "FROM (SELECT *  \n" +
+                "    FROM neo_cas_lms_sit1_sh.crm2 \n" +
+                "    WHERE APPLICATION_RECIEVED_DATE != 'Migrated Case' \n" +
+                "    AND APPLICATION_RECIEVED_DATE IS NOT NULL\n" +
+                ") \n" +
+                "WHERE TO_DATE(SUBSTR(APPLICATION_RECIEVED_DATE, 1, 8), 'dd-mm-yy') = TO_DATE(TO_CHAR(TRUNC(SYSDATE-2), 'dd-mm-yyyy'), 'dd-mm-yy')";
         return query;
     }
 
@@ -113,7 +117,7 @@ public class CrmRecordUtility {
             }
 
             System.out.println("Excel file saved to: " + file.getAbsolutePath());
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.println(e.getMessage());
         }
     }

@@ -29,7 +29,7 @@ public class ServiceImpl implements CRM.Data.Integration.Service.Service {
     private final Logger logger = LoggerFactory.getLogger(ServiceImpl.class);
 
     @Scheduled(cron = "0 0 10 * * *")
-    public void executeTask(){
+    public void executeTask() {
         logger.info("CRM Data invoked by scheduler");
         getCustomerData();
     }
@@ -39,15 +39,15 @@ public class ServiceImpl implements CRM.Data.Integration.Service.Service {
         HashMap<String, List<?>> crmData = new HashMap<>();
         CommonResponse commonResponse = new CommonResponse();
         try {
-           List<CustomerRecord> crmDataValue = jdbcTemplate.query(crmRecordUtility.getQuery(), new BeanPropertyRowMapper<>(CustomerRecord.class));
+            List<CustomerRecord> crmDataValue = jdbcTemplate.query(crmRecordUtility.getQuery(), new BeanPropertyRowMapper<>(CustomerRecord.class));
 
             List<HashMap<String, String>> crmRequest = new ArrayList<>();
             if (!crmDataValue.isEmpty()) {
-            for (CustomerRecord fetchData : crmDataValue) {
-                HashMap<String, String> crmRequestData = convertParamsForCrmRequest(fetchData);
+                for (CustomerRecord fetchData : crmDataValue) {
+                    HashMap<String, String> crmRequestData = convertParamsForCrmRequest(fetchData);
 
-                crmRequest.add(crmRequestData);
-            }
+                    crmRequest.add(crmRequestData);
+                }
                 logger.info("Data fetched successfully. Number of records: {}", crmDataValue.size());
                 commonResponse.setMsg("Data fetched successfully.");
                 crmRecordUtility.generateExcel(crmDataValue);
