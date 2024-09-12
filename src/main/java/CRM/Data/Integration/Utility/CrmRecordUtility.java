@@ -43,9 +43,8 @@ public class CrmRecordUtility {
     private final Logger logger = LoggerFactory.getLogger(CrmRecordUtility.class);
 
     public String getQuery() {
-        String query = "SELECT DISTINCT \"APPLICATION_NUMBER\", \n" +
+        String query = "SELECT DISTINCT \"APPLICATION_NUMBER\" AS applicationNumber, \n" +
                 "                \"CUSTOMER_NUMBER\" AS customerNumber,\n" +
-                "                \"APPLICATION_NUMBER\" AS applicationNumber,\n" +
                 "                \"Loan Account No\" AS loanAccountNo,\n" +
                 "                \"First Name\" AS firstName,\n" +
                 "                \"Last Name\" AS lastName,\n" +
