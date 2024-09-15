@@ -52,7 +52,7 @@ public class ServiceImpl implements CRM.Data.Integration.Service.Service {
                 commonResponse.setMsg("Data fetched successfully.");
                 crmRecordUtility.generateExcel(crmDataValue);
                 crmData.put("records", crmRequest);
-                //            crmRecordUtility.callCrmIntegration(crmData, commonResponse);
+                crmRecordUtility.callCrmIntegration(crmData, commonResponse);
                 logger.info("API triggered successfully. Timestamp: {}", LocalDateTime.now());
 
             } else {

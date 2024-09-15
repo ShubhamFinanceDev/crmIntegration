@@ -62,7 +62,7 @@ public class CrmRecordUtility {
                 "    WHERE APPLICATION_RECIEVED_DATE != 'Migrated Case' \n" +
                 "    AND APPLICATION_RECIEVED_DATE IS NOT NULL\n" +
                 ") \n" +
-                "WHERE TO_DATE(SUBSTR(APPLICATION_RECIEVED_DATE, 1, 8), 'dd-mm-yy') = TO_DATE(TO_CHAR(TRUNC(SYSDATE-2), 'dd-mm-yyyy'), 'dd-mm-yy')";
+                "WHERE TO_DATE(SUBSTR(APPLICATION_RECIEVED_DATE, 1, 8), 'dd-mm-yy') = TO_DATE(TO_CHAR(TRUNC(SYSDATE-1), 'dd-mm-yyyy'), 'dd-mm-yy')";
         return query;
     }
 
@@ -109,7 +109,7 @@ public class CrmRecordUtility {
                 row.createCell(12).setCellValue(entry.getPermanentAddress());
             }
             workbook.write(byteArrayOutputStream);
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             String timestamp = LocalDateTime.now().format(formatter);
             File file = new File(directoryPath, "CustomerRecords_" + timestamp + ".xlsx");
 
