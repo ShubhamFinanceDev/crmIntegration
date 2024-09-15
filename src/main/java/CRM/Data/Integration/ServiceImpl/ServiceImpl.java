@@ -52,13 +52,14 @@ public class ServiceImpl implements CRM.Data.Integration.Service.Service {
                 commonResponse.setMsg("Data fetched successfully.");
                 crmRecordUtility.generateExcel(crmDataValue);
                 crmData.put("records", crmRequest);
+                //            crmRecordUtility.callCrmIntegration(crmData, commonResponse);
+                logger.info("API triggered successfully. Timestamp: {}", LocalDateTime.now());
+
             } else {
                 commonResponse.setMsg("Data not found : {}");
                 logger.info("Data not found for query Triggered on Timestamp: {}", LocalDateTime.now());
             }
 
-//            crmRecordUtility.callCrmIntegration(crmData, commonResponse);
-            logger.info("API triggered successfully. Timestamp: {}", LocalDateTime.now());
             return ResponseEntity.ok(commonResponse);
         } catch (Exception e) {
             commonResponse.setMsg("Technical issue : " + e.getMessage());
