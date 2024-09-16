@@ -14,6 +14,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -31,16 +32,20 @@ public class ServiceImpl implements CRM.Data.Integration.Service.Service {
     @Scheduled(cron = "0 0 1 * * *")
     public void executeTask() {
         logger.info("CRM Data invoked by scheduler");
-        getCustomerData();
+        getCustomerData(null);
     }
 
-    public ResponseEntity<CommonResponse> getCustomerData() {
+    public ResponseEntity<CommonResponse> getCustomerData(Date date) {
 
         HashMap<String, List<?>> crmData = new HashMap<>();
+        List<CustomerRecord> crmDataValue = new ArrayList<>();
         CommonResponse commonResponse = new CommonResponse();
         try {
-            List<CustomerRecord> crmDataValue = jdbcTemplate.query(crmRecordUtility.getQuery(), new BeanPropertyRowMapper<>(CustomerRecord.class));
-
+            if(date != null) {
+                crmDataValue = jdbcTemplate.query(crmRecordUtility.getDateQuery(date), new BeanPropertyRowMapper<>(CustomerRecord.class));
+            }else {
+                crmDataValue = jdbcTemplate.query(crmRecordUtility.getQuery(), new BeanPropertyRowMapper<>(CustomerRecord.class));
+            }
             List<HashMap<String, String>> crmRequest = new ArrayList<>();
             if (!crmDataValue.isEmpty()) {
                 for (CustomerRecord fetchData : crmDataValue) {
