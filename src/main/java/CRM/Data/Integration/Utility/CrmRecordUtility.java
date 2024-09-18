@@ -43,31 +43,7 @@ public class CrmRecordUtility {
     private final RestTemplate restTemplate = new RestTemplate();
     private final Logger logger = LoggerFactory.getLogger(CrmRecordUtility.class);
 
-    public String getQuery() {
-        String query = "SELECT DISTINCT \"APPLICATION_NUMBER\" AS applicationNumber, \n" +
-                "                \"CUSTOMER_NUMBER\" AS customerNumber,\n" +
-                "                \"Loan Account No\" AS loanAccountNo,\n" +
-                "                \"First Name\" AS firstName,\n" +
-                "                \"Last Name\" AS lastName,\n" +
-                "                DBMS_LOB.SUBSTR(\"Mobile Number\", 4000, 1) AS mobileNumber,\n" +
-                "                \"Residential Address\" AS residentialAddress,\n" +
-                "                \"CITY\" AS city,\n" +
-                "                \"STATE\" AS state,\n" +
-                "                \"Pin Code\" AS pinCode,\n" +
-                "                \"Office/ Business Address\" AS officeBusinessAddress,\n" +
-                "                \"Permanent Address\" AS permanentAddress,\n" +
-                "                \"Branch Name\" AS branchName \n" +
-                "FROM (SELECT *  \n" +
-                "    FROM neo_cas_lms_sit1_sh.crm2 \n" +
-                "    WHERE APPLICATION_RECIEVED_DATE != 'Migrated Case' \n" +
-                "    AND APPLICATION_RECIEVED_DATE IS NOT NULL\n" +
-                ") \n" +
-                "WHERE TO_DATE(SUBSTR(APPLICATION_RECIEVED_DATE, 1, 8), 'dd-mm-yy') = TO_DATE(TO_CHAR(TRUNC(SYSDATE-1), 'dd-mm-yyyy'), 'dd-mm-yy')";
-        return query;
-    }
-
-    public String getDateQuery(Date date) {
-
+    public String getQuery(String date) {
         String query = "SELECT DISTINCT \n" +
                 "       \"APPLICATION_NUMBER\" AS applicationNumber, \n" +
                 "       \"CUSTOMER_NUMBER\" AS customerNumber,\n" +
@@ -89,7 +65,7 @@ public class CrmRecordUtility {
                 "    WHERE APPLICATION_RECIEVED_DATE != 'Migrated Case' \n" +
                 "    AND APPLICATION_RECIEVED_DATE IS NOT NULL\n" +
                 ") \n" +
-                "WHERE TO_DATE(SUBSTR(APPLICATION_RECIEVED_DATE, 1, 8), 'dd-mm-yy') = to_date(?,'dd-mm-yy')\n";
+                "WHERE TO_DATE(SUBSTR(APPLICATION_RECIEVED_DATE, 1, 8), 'dd-mm-yy') = TO_DATE('" + date + "','dd-mm-yy')\n";
         return query;
     }
 

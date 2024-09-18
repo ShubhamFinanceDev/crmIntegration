@@ -19,7 +19,7 @@ public class Controller {
     private final Logger logger = LoggerFactory.getLogger(Controller.class);
 
     @PostMapping("/crm-data-integration")
-    public ResponseEntity<?> crmIntegration(@RequestParam("date") Date date){
+    public ResponseEntity<?> crmIntegration(@RequestParam(name = "date") String date){
         logger.info("CRM Data invoked manually");
        return service.getCustomerData(date);
     }
