@@ -31,7 +31,7 @@ public class ServiceImpl implements CRM.Data.Integration.Service.Service {
 
     private final Logger logger = LoggerFactory.getLogger(ServiceImpl.class);
 
-    @Scheduled(cron = "0 10 14 * * *")
+    @Scheduled(cron = "0 0 1 * * *")
     public void executeTask() {
         String date = calendarUtility.crmProcessDate(1);
         logger.info("CRM Data invoked by scheduler");
