@@ -2,8 +2,6 @@ package CRM.Data.Integration.Model;
 
 import lombok.Data;
 
-import java.time.LocalDateTime;
-
 @Data
 public class CustomerRecord {
     private String firstName;

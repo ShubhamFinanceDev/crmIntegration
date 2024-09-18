@@ -2,6 +2,7 @@ package CRM.Data.Integration.ServiceImpl;
 
 import CRM.Data.Integration.Model.CommonResponse;
 import CRM.Data.Integration.Model.CustomerRecord;
+import CRM.Data.Integration.Utility.CalendarUtility;
 import CRM.Data.Integration.Utility.CrmRecordUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,22 +26,25 @@ public class ServiceImpl implements CRM.Data.Integration.Service.Service {
     private JdbcTemplate jdbcTemplate;
     @Autowired
     private CrmRecordUtility crmRecordUtility;
+    @Autowired
+    private CalendarUtility calendarUtility;
 
     private final Logger logger = LoggerFactory.getLogger(ServiceImpl.class);
 
     @Scheduled(cron = "0 0 1 * * *")
     public void executeTask() {
+        String date = calendarUtility.crmProcessDate(1);
         logger.info("CRM Data invoked by scheduler");
-        getCustomerData();
+        getCustomerData(String.valueOf(date));
     }
 
-    public ResponseEntity<CommonResponse> getCustomerData() {
+    public ResponseEntity<CommonResponse> getCustomerData(String date) {
 
         HashMap<String, List<?>> crmData = new HashMap<>();
         CommonResponse commonResponse = new CommonResponse();
         try {
-            List<CustomerRecord> crmDataValue = jdbcTemplate.query(crmRecordUtility.getQuery(), new BeanPropertyRowMapper<>(CustomerRecord.class));
-
+            List<CustomerRecord> crmDataValue = jdbcTemplate.query(crmRecordUtility.getQuery(date), new BeanPropertyRowMapper<>(CustomerRecord.class));
+            System.out.println(crmDataValue);
             List<HashMap<String, String>> crmRequest = new ArrayList<>();
             if (!crmDataValue.isEmpty()) {
                 for (CustomerRecord fetchData : crmDataValue) {

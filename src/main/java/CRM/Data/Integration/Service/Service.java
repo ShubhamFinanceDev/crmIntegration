@@ -5,5 +5,5 @@ import org.springframework.http.ResponseEntity;
 
 public interface Service {
 
-    ResponseEntity<CommonResponse> getCustomerData();
+    ResponseEntity<CommonResponse> getCustomerData(String date);
 }
