@@ -15,6 +15,6 @@ public class CalendarUtility {
         Date currentDate = calendar.getTime();
         String formattedDate = dateFormat.format(currentDate);
         System.out.println("Process date: " + formattedDate);
-        return formattedDate; // Return the formatted date string
+        return formattedDate;
     }
 }
