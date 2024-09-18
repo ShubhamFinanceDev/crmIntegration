@@ -112,7 +112,7 @@ public class CrmRecordUtility {
                 row.createCell(12).setCellValue(entry.getPermanentAddress());
             }
             workbook.write(byteArrayOutputStream);
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             String timestamp = LocalDateTime.now().format(formatter);
             File file = new File(directoryPath, "CustomerRecords_" + timestamp + ".xlsx");
 
