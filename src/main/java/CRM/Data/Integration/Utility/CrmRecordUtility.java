@@ -13,7 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -35,6 +37,8 @@ public class CrmRecordUtility {
 
     @Value("${spring.mail.username}")
     private String sender;
+    @Value("${spring.mail.receiver}")
+    private String receiver;
     @Value("${api.url}")
     private String apiUrl;
     @Value("${excel.save.path}")
@@ -76,8 +80,30 @@ public class CrmRecordUtility {
 //        System.out.println(objectMapper.writeValueAsString(crmData));
         ResponseEntity<String> responseEntity = restTemplate.postForEntity(apiUrl, objectMapper.writeValueAsString(crmData), String.class);
 
-        commonResponse.setMsg((responseEntity.getStatusCode() == HttpStatus.OK && Objects.requireNonNull(responseEntity.getBody()).contains("success")) ? "Success" : "Crm api is having an error");
+        boolean isSuccess = responseEntity.getStatusCode() == HttpStatus.OK && Objects.requireNonNull(responseEntity.getBody()).contains("success");
+        commonResponse.setMsg(isSuccess ? "Success" : "Crm API is having an error");
         logger.info("Received response from CRM integration API. Status Code: {}, Body: {}", responseEntity.getStatusCode(), responseEntity.getBody());
+        if (isSuccess) {
+            sendMail(receiver, "CRM integration was successful");
+        }else {
+            sendMail(receiver, "CRM integration was failed");
+        }
+    }
+
+    @Async
+    protected void sendMail(String email, String msg) throws Exception {
+        try {
+            SimpleMailMessage mailMessage = new SimpleMailMessage();
+            mailMessage.setFrom(sender);
+            mailMessage.setTo(email);
+            mailMessage.setText(msg);
+            mailMessage.setSubject("CrmData Integration Mail");
+
+            javaMailSender.send(mailMessage);
+            System.out.println("Mail sent successfully");
+        } catch (Exception e) {
+            System.out.println(e);
+        }
     }
 
     public void generateExcel(List<CustomerRecord> crmDataValue) {
