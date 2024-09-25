@@ -69,7 +69,10 @@ public class CrmRecordUtility {
                 "    WHERE APPLICATION_RECIEVED_DATE != 'Migrated Case' \n" +
                 "    AND APPLICATION_RECIEVED_DATE IS NOT NULL\n" +
                 ") \n" +
-                "WHERE TO_DATE(SUBSTR(APPLICATION_RECIEVED_DATE, 1, 8), 'dd-mm-yy') = TO_DATE('" + date + "','dd-mm-yy')\n";
+                "WHERE APPLICATION_RECIEVED_DATE IS NOT NULL\n" +
+                "  AND LENGTH(APPLICATION_RECIEVED_DATE) >= 19  -- Ensure it has date and time\n" +
+                "  AND REGEXP_LIKE(SUBSTR(APPLICATION_RECIEVED_DATE, 1, 8), '^[0-9]{2}-[0-9]{2}-[0-9]{2}$')\n" +
+                "  AND TO_DATE(SUBSTR(APPLICATION_RECIEVED_DATE, 1, 8), 'dd-mm-yy') = TO_DATE('"+date+"', 'dd-mm-yy')";
         return query;
     }
 

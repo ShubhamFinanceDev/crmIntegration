@@ -44,7 +44,6 @@ public class ServiceImpl implements CRM.Data.Integration.Service.Service {
         CommonResponse commonResponse = new CommonResponse();
         try {
             List<CustomerRecord> crmDataValue = jdbcTemplate.query(crmRecordUtility.getQuery(date), new BeanPropertyRowMapper<>(CustomerRecord.class));
-            System.out.println(crmDataValue);
             List<HashMap<String, String>> crmRequest = new ArrayList<>();
             if (!crmDataValue.isEmpty()) {
                 for (CustomerRecord fetchData : crmDataValue) {
