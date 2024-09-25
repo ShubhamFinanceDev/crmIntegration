@@ -60,6 +60,7 @@ public class ServiceImpl implements CRM.Data.Integration.Service.Service {
                 logger.info("API triggered successfully. Timestamp: {}", LocalDateTime.now());
 
             } else {
+                crmRecordUtility.sendMail("Data fetched successfully.");
                 commonResponse.setMsg("Data not found : {}");
                 logger.info("Data not found for query Triggered on Timestamp: {}", LocalDateTime.now());
             }

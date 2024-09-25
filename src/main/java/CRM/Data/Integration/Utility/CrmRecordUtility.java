@@ -81,21 +81,22 @@ public class CrmRecordUtility {
         ResponseEntity<String> responseEntity = restTemplate.postForEntity(apiUrl, objectMapper.writeValueAsString(crmData), String.class);
 
         boolean isSuccess = responseEntity.getStatusCode() == HttpStatus.OK && Objects.requireNonNull(responseEntity.getBody()).contains("success");
+        System.out.println(isSuccess);
         commonResponse.setMsg(isSuccess ? "Success" : "Crm API is having an error");
         logger.info("Received response from CRM integration API. Status Code: {}, Body: {}", responseEntity.getStatusCode(), responseEntity.getBody());
         if (isSuccess) {
-            sendMail(receiver, "CRM integration was successful");
-        }else {
-            sendMail(receiver, "CRM integration was failed");
+            sendMail("CRM integration was successful");
+        } else {
+            sendMail("CRM integration was failed");
         }
     }
 
     @Async
-    protected void sendMail(String email, String msg) throws Exception {
+    public void sendMail(String msg) throws Exception {
         try {
             SimpleMailMessage mailMessage = new SimpleMailMessage();
             mailMessage.setFrom(sender);
-            mailMessage.setTo(email);
+            mailMessage.setTo(receiver);
             mailMessage.setText(msg);
             mailMessage.setSubject("CrmData Integration Mail");
 
@@ -113,9 +114,7 @@ public class CrmRecordUtility {
             Sheet sheet = workbook.createSheet("Sheet1");
 
             Row headerRow = sheet.createRow(0);
-            String[] headers = {"First Name", "Application No", "Last Name", "Contact No 1", "Email ID",
-                    "Residential Address", "City", "Pincode", "State", "Customer Number",
-                    "Agreement Number", "Branch", "Permanent Address"};
+            String[] headers = {"First Name", "Application No", "Last Name", "Contact No 1", "Email ID", "Residential Address", "City", "Pincode", "State", "Customer Number", "Agreement Number", "Branch", "Permanent Address"};
             for (int i = 0; i < headers.length; i++) {
                 headerRow.createCell(i).setCellValue(headers[i]);
             }
