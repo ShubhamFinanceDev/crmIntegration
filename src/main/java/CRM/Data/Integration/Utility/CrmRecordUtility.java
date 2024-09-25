@@ -25,6 +25,7 @@ import java.io.FileOutputStream;
 import java.sql.Date;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -87,24 +88,31 @@ public class CrmRecordUtility {
         System.out.println(isSuccess);
         commonResponse.setMsg(isSuccess ? "Success" : "Crm API is having an error");
         logger.info("Received response from CRM integration API. Status Code: {}, Body: {}", responseEntity.getStatusCode(), responseEntity.getBody());
-        if (isSuccess) {
-            sendMail("CRM integration was successful");
-        } else {
-            sendMail("CRM integration was failed");
-        }
     }
 
     @Async
-    public void sendMail(String msg) throws Exception {
+    public void sendMail(String msg,String status) {
         try {
+            String successMsg="Dear Sir,Madam \n\n I would like to inform you that CRM job has been completed successfully at "+LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"))+"\n\n\n Regards,\nIT Support.";
+            String failureMsg="Dear Sir,Madam \n\n I would like to inform you that CRM job has been got failed at "+LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"))+",due to following reason "+msg+ ".\n\n\n Regards,\nIT Support.";
+            List<String> emailList = new ArrayList<String>();
+            emailList.add("Kanika.sharma1@shubham.co");
+            emailList.add("Jyoti.jha@shubham.co");
+            emailList.add("Aarti.sharma@shubham.co");
+            emailList.add("ravi.soni@shubham.co");
+            emailList.add("Preeti.09721@shubham.co");
+            emailList.add("kumar.saurabh@dbalounge.com");
+
+            emailList.forEach(sendMail->{
             SimpleMailMessage mailMessage = new SimpleMailMessage();
             mailMessage.setFrom(sender);
-            mailMessage.setTo(receiver);
-            mailMessage.setText(msg);
-            mailMessage.setSubject("CrmData Integration Mail");
+            mailMessage.setTo(sendMail);
+            mailMessage.setText(status.equals("success")?successMsg:failureMsg);
+            mailMessage.setSubject("Crm-Job notification");
 
             javaMailSender.send(mailMessage);
             System.out.println("Mail sent successfully");
+            });
         } catch (Exception e) {
             System.out.println(e);
         }
