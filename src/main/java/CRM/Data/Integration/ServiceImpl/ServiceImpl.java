@@ -33,7 +33,7 @@ public class ServiceImpl implements CRM.Data.Integration.Service.Service {
 
     private final Logger logger = LoggerFactory.getLogger(ServiceImpl.class);
 
-    @Scheduled(cron = "0 22 23 * * *")
+    @Scheduled(cron = "0 0 20 * * *")
     public void executeTask() throws Exception {
         String date = calendarUtility.crmProcessDate(1);
         ResponseEntity<CommonResponse> responseEntity = getCustomerData(date);
