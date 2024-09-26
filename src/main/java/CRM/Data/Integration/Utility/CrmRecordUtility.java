@@ -3,8 +3,6 @@ package CRM.Data.Integration.Utility;
 import CRM.Data.Integration.Model.CommonResponse;
 import CRM.Data.Integration.Model.CustomerRecord;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -17,7 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -25,6 +22,7 @@ import org.springframework.web.client.RestTemplate;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.sql.Date;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -51,7 +49,31 @@ public class CrmRecordUtility {
     private final Logger logger = LoggerFactory.getLogger(CrmRecordUtility.class);
 
     public String getQuery(String date) {
-        String query = "SELECT DISTINCT \n" + "       \"APPLICATION_NUMBER\" AS applicationNumber, \n" + "       \"CUSTOMER_NUMBER\" AS customerNumber,\n" + "       \"Loan Account No\" AS loanAccountNo,\n" + "       \"First Name\" AS firstName,\n" + "       \"Last Name\" AS lastName,\n" + "       DBMS_LOB.SUBSTR(\"Mobile Number\", 4000, 1) AS mobileNumber,\n" + "       \"Residential Address\" AS residentialAddress,\n" + "       \"CITY\" AS city,\n" + "       \"STATE\" AS state,\n" + "       \"Pin Code\" AS pinCode,\n" + "       \"Office/ Business Address\" AS officeBusinessAddress,\n" + "       \"Permanent Address\" AS permanentAddress,\n" + "       \"Branch Name\" AS branchName ,\n" + "       \"APPLICATION_RECIEVED_DATE\" AS APPLICATIONRECIEVEDDATE\n" + "FROM (\n" + "    SELECT *  \n" + "    FROM neo_cas_lms_sit1_sh.crm2 \n" + "    WHERE APPLICATION_RECIEVED_DATE != 'Migrated Case' \n" + "    AND APPLICATION_RECIEVED_DATE IS NOT NULL\n" + ") \n" + "WHERE APPLICATION_RECIEVED_DATE IS NOT NULL\n" + "  AND LENGTH(APPLICATION_RECIEVED_DATE) >= 19  -- Ensure it has date and time\n" + "  AND REGEXP_LIKE(SUBSTR(APPLICATION_RECIEVED_DATE, 1, 8), '^[0-9]{2}-[0-9]{2}-[0-9]{2}$')\n" + "  AND TO_DATE(SUBSTR(APPLICATION_RECIEVED_DATE, 1, 8), 'dd-mm-yy') = TO_DATE('" + date + "', 'dd-mm-yy')";
+        String query = "SELECT DISTINCT \n" +
+                "       \"APPLICATION_NUMBER\" AS applicationNumber, \n" +
+                "       \"CUSTOMER_NUMBER\" AS customerNumber,\n" +
+                "       \"Loan Account No\" AS loanAccountNo,\n" +
+                "       \"First Name\" AS firstName,\n" +
+                "       \"Last Name\" AS lastName,\n" +
+                "       DBMS_LOB.SUBSTR(\"Mobile Number\", 4000, 1) AS mobileNumber,\n" +
+                "       \"Residential Address\" AS residentialAddress,\n" +
+                "       \"CITY\" AS city,\n" +
+                "       \"STATE\" AS state,\n" +
+                "       \"Pin Code\" AS pinCode,\n" +
+                "       \"Office/ Business Address\" AS officeBusinessAddress,\n" +
+                "       \"Permanent Address\" AS permanentAddress,\n" +
+                "       \"Branch Name\" AS branchName ,\n" +
+                "       \"APPLICATION_RECIEVED_DATE\" AS APPLICATIONRECIEVEDDATE\n" +
+                "FROM (\n" +
+                "    SELECT *  \n" +
+                "    FROM neo_cas_lms_sit1_sh.crm2 \n" +
+                "    WHERE APPLICATION_RECIEVED_DATE != 'Migrated Case' \n" +
+                "    AND APPLICATION_RECIEVED_DATE IS NOT NULL\n" +
+                ") \n" +
+                "WHERE APPLICATION_RECIEVED_DATE IS NOT NULL\n" +
+                "  AND LENGTH(APPLICATION_RECIEVED_DATE) >= 19  -- Ensure it has date and time\n" +
+                "  AND REGEXP_LIKE(SUBSTR(APPLICATION_RECIEVED_DATE, 1, 8), '^[0-9]{2}-[0-9]{2}-[0-9]{2}$')\n" +
+                "  AND TO_DATE(SUBSTR(APPLICATION_RECIEVED_DATE, 1, 8), 'dd-mm-yy') = TO_DATE('"+date+"', 'dd-mm-yy')";
         return query;
     }
 
@@ -69,7 +91,7 @@ public class CrmRecordUtility {
     }
 
     @Async
-    public void sendMail(String msg, File excel, String status) {
+    public void sendMail(String msg,String status) {
         try {
             String successMsg = "Dear Sir/Madam,\n\nI would like to inform you that the CRM job has been completed successfully at " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")) + "\n\n\nRegards,\nIT Support.";
             String failureMsg = "Dear Sir/Madam,\n\nI would like to inform you that the CRM job has failed at " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")) + ", due to the following reason: " + msg + ".\n\n\nRegards,\nIT Support.";
@@ -82,28 +104,20 @@ public class CrmRecordUtility {
             emailList.add("Preeti.09721@shubham.co");
             emailList.add("kumar.saurabh@dbalounge.com");
 
-            for (String recipient : emailList) {
-                MimeMessage message = javaMailSender.createMimeMessage();
-                MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            emailList.forEach(sendMail->{
+            SimpleMailMessage mailMessage = new SimpleMailMessage();
+            mailMessage.setFrom(sender);
+            mailMessage.setTo(sendMail);
+            mailMessage.setText(status.equals("success")?successMsg:failureMsg);
+            mailMessage.setSubject("Crm-Job notification");
 
-                helper.setFrom(sender);
-                helper.setTo(recipient);
-                helper.setSubject("CRM Job Notification");
-                helper.setText(status.equals("success") ? successMsg : failureMsg);
-
-                if (excel != null && excel.exists()) {
-                    helper.addAttachment(excel.getName(), excel);
-                }
-
-                javaMailSender.send(message);
-                System.out.println("Mail sent successfully to: " + recipient);
-            }
+            javaMailSender.send(mailMessage);
+            System.out.println("Mail sent successfully");
+            });
         } catch (Exception e) {
-            System.out.println("Error sending mail: " + e.getMessage());
-            e.printStackTrace();
+            System.out.println(e);
         }
     }
-
 
     public File generateExcel(List<CustomerRecord> crmDataValue) {
         File file = null;
