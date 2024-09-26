@@ -45,7 +45,7 @@ public class ServiceImpl implements CRM.Data.Integration.Service.Service {
             crmRecordUtility.sendMail(commonResponse.getMsg(), "success");
         } else {
             logger.info("CRM process completed and got failed.");
-            crmRecordUtility.sendMail(commonResponse.getMsg(), "faliure");
+            crmRecordUtility.sendMail(commonResponse.getMsg(), "failure");
         }
     }
 
