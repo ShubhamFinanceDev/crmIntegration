@@ -16,6 +16,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -64,7 +65,7 @@ public class ServiceImpl implements CRM.Data.Integration.Service.Service {
                 }
                 logger.info("Data fetched successfully. Number of records: {}", crmDataValue.size());
                 commonResponse.setMsg("Data fetched successfully.");
-                crmRecordUtility.generateExcel(crmDataValue);
+                File excel = crmRecordUtility.generateExcel(crmDataValue);
                 crmData.put("records", crmRequest);
                 crmRecordUtility.callCrmIntegration(crmData, commonResponse);
                 logger.info("API triggered successfully. Timestamp: {}", LocalDateTime.now());

@@ -118,7 +118,8 @@ public class CrmRecordUtility {
         }
     }
 
-    public void generateExcel(List<CustomerRecord> crmDataValue) {
+    public File generateExcel(List<CustomerRecord> crmDataValue) {
+        File file = null;
         try {
             Workbook workbook = new XSSFWorkbook();
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -150,7 +151,7 @@ public class CrmRecordUtility {
             workbook.write(byteArrayOutputStream);
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             String timestamp = LocalDateTime.now().format(formatter);
-            File file = new File(directoryPath, "CustomerRecords_" + timestamp + ".xlsx");
+            file = new File(directoryPath, "CustomerRecords_" + timestamp + ".xlsx");
 
             try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
                 byteArrayOutputStream.writeTo(fileOutputStream);
@@ -160,6 +161,7 @@ public class CrmRecordUtility {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
+        return file;
     }
 
 
