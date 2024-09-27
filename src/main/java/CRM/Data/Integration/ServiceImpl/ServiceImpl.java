@@ -7,7 +7,6 @@ import CRM.Data.Integration.Utility.CrmRecordUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
@@ -16,8 +15,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -43,10 +40,10 @@ public class ServiceImpl implements CRM.Data.Integration.Service.Service {
 
         if (responseEntity.getStatusCode() == HttpStatus.OK) {
             logger.info("CRM process successfully completed.");
-            crmRecordUtility.sendMail(commonResponse.getMsg(), "success");
+            crmRecordUtility.sendMail(commonResponse.getMsg(), "success", commonResponse.getFileName());
         } else {
             logger.info("CRM process completed and got failed.");
-            crmRecordUtility.sendMail(commonResponse.getMsg(), "failure");
+            crmRecordUtility.sendMail(commonResponse.getMsg(), "failure", null);
         }
     }
 
@@ -64,8 +61,9 @@ public class ServiceImpl implements CRM.Data.Integration.Service.Service {
                     crmRequest.add(crmRequestData);
                 }
                 logger.info("Data fetched successfully. Number of records: {}", crmDataValue.size());
+                String excelFileName = crmRecordUtility.generateExcel(crmDataValue);
+                commonResponse.setFileName(excelFileName);
                 commonResponse.setMsg("Data fetched successfully.");
-                File excel = crmRecordUtility.generateExcel(crmDataValue);
                 crmData.put("records", crmRequest);
                 crmRecordUtility.callCrmIntegration(crmData, commonResponse);
                 logger.info("API triggered successfully. Timestamp: {}", LocalDateTime.now());

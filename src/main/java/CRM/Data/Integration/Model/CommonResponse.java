@@ -5,4 +5,5 @@ import lombok.Data;
 @Data
 public class CommonResponse {
     private String msg;
+    private String fileName;
 }
