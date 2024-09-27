@@ -3,6 +3,8 @@ package CRM.Data.Integration.Utility;
 import CRM.Data.Integration.Model.CommonResponse;
 import CRM.Data.Integration.Model.CustomerRecord;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -13,16 +15,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.sql.Date;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -35,6 +40,8 @@ public class CrmRecordUtility {
 
     @Value("${spring.mail.username}")
     private String sender;
+    @Value("${spring.mail.receiver}")
+    private String receiver;
     @Value("${api.url}")
     private String apiUrl;
     @Value("${excel.save.path}")
@@ -79,20 +86,62 @@ public class CrmRecordUtility {
 //        System.out.println(objectMapper.writeValueAsString(crmData));
         ResponseEntity<String> responseEntity = restTemplate.postForEntity(apiUrl, objectMapper.writeValueAsString(crmData), String.class);
 
-        commonResponse.setMsg((responseEntity.getStatusCode() == HttpStatus.OK && Objects.requireNonNull(responseEntity.getBody()).contains("success")) ? "Success" : "Crm api is having an error");
+        boolean isSuccess = responseEntity.getStatusCode() == HttpStatus.OK && Objects.requireNonNull(responseEntity.getBody()).contains("success");
+        System.out.println(isSuccess);
+        commonResponse.setMsg(isSuccess ? "Success" : "Crm API is having an error");
         logger.info("Received response from CRM integration API. Status Code: {}, Body: {}", responseEntity.getStatusCode(), responseEntity.getBody());
     }
 
-    public void generateExcel(List<CustomerRecord> crmDataValue) {
+    @Async
+    public void sendMail(String msg, String status, String fileName) {
+        try {
+            String successMsg = "Dear Sir/Madam,\n\nI would like to inform you that the CRM job has been completed successfully at " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")) + "\nPlease find the attached document for your reference. \n\n\nRegards,\nIT Support.";
+            String failureMsg = "Dear Sir/Madam,\n\nI would like to inform you that the CRM job has failed at " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")) + ", due to the following reason: " + msg + ".\n\n\nRegards,\nIT Support.";
+
+            List<String> emailList = new ArrayList<>();
+            emailList.add("Kanika.sharma1@shubham.co");
+            emailList.add("Jyoti.jha@shubham.co");
+            emailList.add("Aarti.sharma@shubham.co");
+            emailList.add("ravi.soni@shubham.co");
+            emailList.add("Preeti.09721@shubham.co");
+            emailList.add("kumar.saurabh@dbalounge.com");
+
+            emailList.forEach(sendMail->{
+                try {
+                    MimeMessage message = javaMailSender.createMimeMessage();
+                    MimeMessageHelper helper = new MimeMessageHelper(message, true);
+                    helper.setFrom(sender);
+                    helper.setTo(sendMail);
+                    helper.setText(status.equals("success") ? successMsg : failureMsg);
+                    helper.setSubject("Crm-Job notification");
+
+                    File excelFile = new File(directoryPath, fileName);
+                    if (excelFile.exists()) {
+                        helper.addAttachment(excelFile.getName(), excelFile);
+                    } else {
+                        logger.warn("Excel file not found: {}", excelFile.getAbsolutePath());
+                    }
+
+                    javaMailSender.send(message);
+                    System.out.println("Mail sent successfully to: " + sendMail);
+                } catch (MessagingException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+
+    public String generateExcel(List<CustomerRecord> crmDataValue) {
+        String fileName = null;
         try {
             Workbook workbook = new XSSFWorkbook();
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             Sheet sheet = workbook.createSheet("Sheet1");
 
             Row headerRow = sheet.createRow(0);
-            String[] headers = {"First Name", "Application No", "Last Name", "Contact No 1", "Email ID",
-                    "Residential Address", "City", "Pincode", "State", "Customer Number",
-                    "Agreement Number", "Branch", "Permanent Address"};
+            String[] headers = {"First Name", "Application No", "Last Name", "Contact No 1", "Email ID", "Residential Address", "City", "Pincode", "State", "Customer Number", "Agreement Number", "Branch", "Permanent Address"};
             for (int i = 0; i < headers.length; i++) {
                 headerRow.createCell(i).setCellValue(headers[i]);
             }
@@ -114,10 +163,12 @@ public class CrmRecordUtility {
                 row.createCell(11).setCellValue(entry.getBranchName());
                 row.createCell(12).setCellValue(entry.getPermanentAddress());
             }
+
             workbook.write(byteArrayOutputStream);
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             String timestamp = LocalDateTime.now().format(formatter);
-            File file = new File(directoryPath, "CustomerRecords_" + timestamp + ".xlsx");
+            fileName = "CustomerRecords_" + timestamp + ".xlsx";
+            File file = new File(directoryPath, fileName);
 
             try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
                 byteArrayOutputStream.writeTo(fileOutputStream);
@@ -127,7 +178,9 @@ public class CrmRecordUtility {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
+        return fileName;
     }
+
 
 
 }

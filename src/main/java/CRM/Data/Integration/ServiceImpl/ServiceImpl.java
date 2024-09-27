@@ -31,11 +31,20 @@ public class ServiceImpl implements CRM.Data.Integration.Service.Service {
 
     private final Logger logger = LoggerFactory.getLogger(ServiceImpl.class);
 
-    @Scheduled(cron = "0 0 20 * * *")
-    public void executeTask() {
+    @Scheduled(cron = "0 0 13 * * *")
+    public void executeTask() throws Exception {
         String date = calendarUtility.crmProcessDate(1);
+        ResponseEntity<CommonResponse> responseEntity = getCustomerData(date);
         logger.info("CRM Data invoked by scheduler");
-        getCustomerData(String.valueOf(date));
+        CommonResponse commonResponse = responseEntity.getBody();
+
+        if (responseEntity.getStatusCode() == HttpStatus.OK) {
+            logger.info("CRM process successfully completed.");
+            crmRecordUtility.sendMail(commonResponse.getMsg(), "success", commonResponse.getFileName());
+        } else {
+            logger.info("CRM process completed and got failed.");
+            crmRecordUtility.sendMail(commonResponse.getMsg(), "failure", null);
+        }
     }
 
     public ResponseEntity<CommonResponse> getCustomerData(String date) {
@@ -52,18 +61,18 @@ public class ServiceImpl implements CRM.Data.Integration.Service.Service {
                     crmRequest.add(crmRequestData);
                 }
                 logger.info("Data fetched successfully. Number of records: {}", crmDataValue.size());
+                String excelFileName = crmRecordUtility.generateExcel(crmDataValue);
+                commonResponse.setFileName(excelFileName);
                 commonResponse.setMsg("Data fetched successfully.");
-                crmRecordUtility.generateExcel(crmDataValue);
                 crmData.put("records", crmRequest);
                 crmRecordUtility.callCrmIntegration(crmData, commonResponse);
                 logger.info("API triggered successfully. Timestamp: {}", LocalDateTime.now());
-
+                return ResponseEntity.ok(commonResponse);
             } else {
                 commonResponse.setMsg("Data not found : {}");
                 logger.info("Data not found for query Triggered on Timestamp: {}", LocalDateTime.now());
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(commonResponse);
             }
-
-            return ResponseEntity.ok(commonResponse);
         } catch (Exception e) {
             commonResponse.setMsg("Technical issue : " + e.getMessage());
             logger.error("Error occurred during data retrieval or CRM integration. Exception: {}", e.getMessage(), e);
